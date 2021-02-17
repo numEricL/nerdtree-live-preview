@@ -122,10 +122,7 @@ function NERDTreePreview_gi(...)
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_RestorePreviewWindow()
     execute 'split +setlocal\ modifiable|setlocal\ noreadonly ' . l:filepath
-    let l:preview_win = win_getid(winnr())
-    call NERDTreeFocus()
-    let b:NERDTreePreview_preview_win = l:preview_win
-    let b:NERDTreePreview_original_buf = l:filepath
+    call NERDTreePreview_SetPreviewWindow()
 endfunction
 
 function NERDTreePreview_s(...)
@@ -140,10 +137,7 @@ function NERDTreePreview_gs(...)
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_RestorePreviewWindow()
     execute 'vsplit +setlocal\ modifiable|setlocal\ noreadonly ' . l:filepath
-    let l:preview_win = win_getid(winnr())
-    call NERDTreeFocus()
-    let b:NERDTreePreview_preview_win = l:preview_win
-    let b:NERDTreePreview_original_buf = l:filepath
+    call NERDTreePreview_SetPreviewWindow()
 endfunction
 
 function NERDTreePreview_GetCurrentNode()
@@ -166,7 +160,7 @@ function NERDTreePreview_SetPreviewWindow()
         call NERDTreeFocus()
         wincmd p
         let l:preview_win = win_getid(winnr())
-        let l:original_buf = expand('%:p')
+        let l:original_buf = bufnr('%')
         call NERDTreeFocus()
         let b:NERDTreePreview_preview_win = l:preview_win
         let b:NERDTreePreview_original_buf = l:original_buf
@@ -178,7 +172,7 @@ function NERDTreePreview_RestorePreviewWindow()
     if exists('b:NERDTreePreview_preview_win')
         let l:original_buf = b:NERDTreePreview_original_buf
         call win_gotoid(b:NERDTreePreview_preview_win)
-        execute 'edit ' . l:original_buf
+        execute 'buffer ' . l:original_buf
     endif
 endfunction
 
@@ -187,8 +181,11 @@ function NERDTreePreview_Show()
     if l:file_obj == {}
         return
     endif
-
     let l:filename = l:file_obj.path.str()
+    if winbufnr(b:NERDTreePreview_preview_win) == bufnr(l:filename)
+        return
+    endif
+
     if filereadable(l:filename) && !NERDTreePreview_IsBinary(l:filename)
         call NERDTreeFocus()
         call win_gotoid(b:NERDTreePreview_preview_win)
