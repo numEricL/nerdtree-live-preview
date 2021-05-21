@@ -1,6 +1,10 @@
+" TODO Create buffer for preview window, this will fix problems when preview is
+" opened on empty buffer
+
 if !exists('g:NERDTreePreview_Enable')
     let g:NERDTreePreview_Enable = 1
 endif
+let g:NERDTreePreview_line_count_limit = 10000
 
 augroup NERDTreePreview
     autocmd VimEnter * if (g:NERDTreePreview_Enable) | call NERDTreePreview_Enable()
@@ -186,7 +190,7 @@ function NERDTreePreview_Show()
         return
     endif
 
-    if filereadable(l:filename) && !NERDTreePreview_IsBinary(l:filename)
+    if filereadable(l:filename) && !NERDTreePreview_Skip(l:filename)
         call NERDTreeFocus()
         call win_gotoid(b:NERDTreePreview_preview_win)
         if buflisted(l:filename)
@@ -235,6 +239,15 @@ function NERDTreePreview_DeleteUnlistedBuffers()
     endfor
 endfunction
 
-function NERDTreePreview_IsBinary(file)
-    return system('file -ib ' . shellescape(a:file)) =~# 'binary'
-endfun
+function NERDTreePreview_Skip(file)
+    let line_count = system( 'wc -l '.shellescape(a:file).' | awk '. shellescape('{print $1}') )
+    if line_count > g:NERDTreePreview_line_count_limit
+        return 1
+    endif
+
+    if system('file -ib ' . shellescape(a:file)) =~# 'binary'
+        return 1
+    endif
+
+    return 0
+endfunction
