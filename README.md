@@ -2,9 +2,10 @@
 Extends [NERDTree](https://github.com/preservim/nerdtree) with a live preview of
 files as you navigate the tree.
 
-## Dependencies
+## Dependencies and Requirements
 * [NERDTree](https://github.com/preservim/nerdtree)
 * A shell with `file -ib`, used for excluding binary files from previews.
+* Vim version 8.0 (although mostly functional with 7.04)
 
 ## Installation
 Use a vim plugin manager or add NERDTreePreview.vim to ~/.vim/plugin

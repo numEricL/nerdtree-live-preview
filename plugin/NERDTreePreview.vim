@@ -7,7 +7,7 @@ augroup NERDTreePreview
     autocmd VimEnter * if (g:NERDTreePreview_Enable) | call NERDTreePreview_Enable()
 augroup END
 
-function NERDTreePreview_Enable()
+function NERDTreePreview_Enable() abort
     call NERDTreeAddKeyMap({
                 \ 'key':           'j',
                 \ 'callback':      'NERDTreePreview_j',
@@ -78,77 +78,81 @@ function NERDTreePreview_Enable()
                 \ })
     call NERDTreeAddKeyMap({
                 \ 'key': 'q',
-                \ 'callback': 'NERDTreePreview_Quit',
+                \ 'callback': 'NERDTreePreview_q',
                 \ 'quickhelpText': '...',
                 \ 'override': '1',
                 \ })
 endfunction
 
-function NERDTreePreview_j()
+function NERDTreePreview_j() abort
     normal! j
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Show()
+    call s:SetPreviewWindow()
+    call s:Show()
 endfunction
 
-function NERDTreePreview_k()
+function NERDTreePreview_k() abort
     normal! k
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Show()
+    call s:SetPreviewWindow()
+    call s:Show()
 endfunction
 
-function NERDTreePreview_o(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Quit()
+function NERDTreePreview_o(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:Quit()
     execute 'edit +setlocal\ modifiable '.l:filepath
 endfunction
 
-function NERDTreePreview_t(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Quit()
+function NERDTreePreview_t(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:Quit()
     execute '$tabnew +setlocal\ modifiable '.l:filepath
 endfunction
 
-function NERDTreePreview_T(...)
-    let l:nerdtree_win = win_getid(winnr())
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
+function NERDTreePreview_T(...) abort
+    let l:nerdtree_win = s:Win_getid(winnr())
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
     execute '$tabnew +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
-    call win_gotoid(l:nerdtree_win)
+    call s:Win_gotoid(l:nerdtree_win)
 endfunction
 
-function NERDTreePreview_i(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Quit()
+function NERDTreePreview_i(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:Quit()
     execute 'split +setlocal\ modifiable '.l:filepath
 endfunction
 
-function NERDTreePreview_gi(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_RestorePreviewWindow()
+function NERDTreePreview_gi(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:RestorePreviewWindow()
     execute 'split +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
-    call NERDTreePreview_SetPreviewWindow()
+    call s:SetPreviewWindow()
 endfunction
 
-function NERDTreePreview_s(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_Quit()
+function NERDTreePreview_s(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:Quit()
     execute 'vsplit +setlocal\ modifiable '.l:filepath
 endfunction
 
-function NERDTreePreview_gs(...)
-    let l:filepath = NERDTreePreview_GetCurrentNode()
-    call NERDTreePreview_SetPreviewWindow()
-    call NERDTreePreview_RestorePreviewWindow()
+function NERDTreePreview_gs(...) abort
+    let l:filepath = s:GetCurrentNode()
+    call s:SetPreviewWindow()
+    call s:RestorePreviewWindow()
     execute 'vsplit +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
-    call NERDTreePreview_SetPreviewWindow()
+    call s:SetPreviewWindow()
 endfunction
 
-function NERDTreePreview_GetCurrentNode()
+function NERDTreePreview_q(...) abort
+    call s:Quit()
+endfunction
+
+function s:GetCurrentNode() abort
     let l:filepath = ""
     let l:file_obj = g:NERDTreeFileNode.GetSelected()
 
@@ -158,19 +162,19 @@ function NERDTreePreview_GetCurrentNode()
     return l:filepath
 endfunction
 
-function NERDTreePreview_SetPreviewWindow()
-    let l:preview_changed = !NERDTreePreview_IsSamePreviewWindow()
+function s:SetPreviewWindow() abort
+    let l:preview_changed = !s:IsSamePreviewWindow()
     if exists('b:NERDTreePreview_preview_win') && l:preview_changed
         call NERDTreeFocus()
         wincmd p
-        let l:new_preview_win = win_getid(winnr())
-        call NERDTreePreview_RestorePreviewWindow()
-        call win_gotoid(l:new_preview_win)
+        let l:new_preview_win = s:Win_getid(winnr())
+        call s:RestorePreviewWindow()
+        call s:Win_gotoid(l:new_preview_win)
     endif
     if !exists('b:NERDTreePreview_preview_win') || l:preview_changed
         call NERDTreeFocus()
         wincmd p
-        let l:preview_win = win_getid(winnr())
+        let l:preview_win = s:Win_getid(winnr())
         let l:original_buf = bufnr('%')
         call NERDTreeFocus()
         let b:NERDTreePreview_preview_win = l:preview_win
@@ -178,17 +182,17 @@ function NERDTreePreview_SetPreviewWindow()
     endif
 endfunction
 
-function NERDTreePreview_RestorePreviewWindow()
+function s:RestorePreviewWindow() abort
     call NERDTreeFocus()
     if exists('b:NERDTreePreview_preview_win')
         let l:original_buf = b:NERDTreePreview_original_buf
-        call win_gotoid(b:NERDTreePreview_preview_win)
+        call s:Win_gotoid(b:NERDTreePreview_preview_win)
         execute 'buffer '.l:original_buf
     endif
 endfunction
 
-let s:NERDTreePreview_unlisted_buffers = []
-function NERDTreePreview_Show()
+let s:unlisted_buffers = {}
+function s:Show() abort
     let l:file_obj = g:NERDTreeFileNode.GetSelected()
     if l:file_obj == {}
         return
@@ -198,9 +202,9 @@ function NERDTreePreview_Show()
         return
     endif
 
-    if filereadable(l:filename) && !NERDTreePreview_Skip(l:filename)
+    if filereadable(l:filename) && !s:Skip(l:filename)
         call NERDTreeFocus()
-        call win_gotoid(b:NERDTreePreview_preview_win)
+        call s:Win_gotoid(b:NERDTreePreview_preview_win)
         if buflisted(l:filename)
             execute 'edit '.l:filename
         else
@@ -208,44 +212,43 @@ function NERDTreePreview_Show()
             set shortmess+=A
             execute 'edit +setlocal\ nobuflisted|setlocal\ nomodifiable|setlocal\ readonly '.l:filename 
             let &shortmess = l:shortmess_revert
-            let s:NERDTreePreview_unlisted_buffers = add(s:NERDTreePreview_unlisted_buffers, bufnr())
-            call uniq(sort(s:NERDTreePreview_unlisted_buffers))
+            let s:unlisted_buffers[bufnr('%')] = ''
         endif
         call NERDTreeFocus()
     endif
 endfunction
 
-function NERDTreePreview_IsSamePreviewWindow()
+function s:IsSamePreviewWindow() abort
     call NERDTreeFocus()
     let l:result = 1
     if exists('b:NERDTreePreview_preview_win')
         let l:preview_win = b:NERDTreePreview_preview_win
         wincmd p
-        let l:result = win_getid(winnr()) == l:preview_win
+        let l:result = s:Win_getid(winnr()) == l:preview_win
     endif
     call NERDTreeFocus()
     return l:result
 endfunction
 
-function NERDTreePreview_Quit()
-    call NERDTreePreview_RestorePreviewWindow()
+function s:Quit() abort
+    call s:RestorePreviewWindow()
     call NERDTreeFocus()
     if exists('b:NERDTreePreview_preview_win')
         unlet b:NERDTreePreview_preview_win
         unlet b:NERDTreePreview_original_buf
     endif
     silent! NERDTreeClose
-    call NERDTreePreview_DeleteUnlistedBuffers()
+    call s:DeleteUnlistedBuffers()
 endfunction
 
-function NERDTreePreview_DeleteUnlistedBuffers()
-    for l:num in s:NERDTreePreview_unlisted_buffers
+function s:DeleteUnlistedBuffers() abort
+    for l:num in keys(s:unlisted_buffers)
         silent execute l:num.'bwipeout'
     endfor
-    let s:NERDTreePreview_unlisted_buffers = []
+    let s:unlisted_buffers = {}
 endfunction
 
-function NERDTreePreview_Skip(file)
+function s:Skip(file) abort
     let line_count = system( 'wc -l '.shellescape(a:file).' | awk '.shellescape('{print $1}') )
     if line_count > g:NERDTreePreview_line_count_limit
         return 1
@@ -256,4 +259,25 @@ function NERDTreePreview_Skip(file)
     endif
 
     return 0
+endfunction
+
+function s:Win_getid(nr) abort
+    if v:version >= 800
+        return win_getid(a:nr)
+    else
+        return a:nr
+    endif
+endfunction
+
+function s:Win_gotoid(id) abort
+    if v:version >= 800
+        return win_gotoid(a:id)
+    else
+        if 0 < a:id && a:id <= winnr('$')
+            execute a:id."wincmd w"
+            return 1
+        else
+            return 0
+        endif
+    endif
 endfunction
