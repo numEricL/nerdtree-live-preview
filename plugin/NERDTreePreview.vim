@@ -1,6 +1,3 @@
-" TODO Create buffer for preview window, this will fix problems when preview is
-" opened on empty buffer
-
 if !exists('g:NERDTreePreview_Enable')
     let g:NERDTreePreview_Enable = 1
 endif
@@ -96,21 +93,21 @@ function NERDTreePreview_o(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_Quit()
-    execute 'edit +setlocal\ modifiable ' . l:filepath
+    execute 'edit +setlocal\ modifiable '.l:filepath
 endfunction
 
 function NERDTreePreview_t(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_Quit()
-    execute '$tabnew +setlocal\ modifiable ' . l:filepath
+    execute '$tabnew +setlocal\ modifiable '.l:filepath
 endfunction
 
 function NERDTreePreview_T(...)
     let l:nerdtree_win = win_getid(winnr())
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
-    execute '$tabnew +setlocal\ modifiable|setlocal\ noreadonly ' . l:filepath
+    execute '$tabnew +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
     call win_gotoid(l:nerdtree_win)
 endfunction
 
@@ -118,14 +115,14 @@ function NERDTreePreview_i(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_Quit()
-    execute 'split +setlocal\ modifiable ' . l:filepath
+    execute 'split +setlocal\ modifiable '.l:filepath
 endfunction
 
 function NERDTreePreview_gi(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_RestorePreviewWindow()
-    execute 'split +setlocal\ modifiable|setlocal\ noreadonly ' . l:filepath
+    execute 'split +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
     call NERDTreePreview_SetPreviewWindow()
 endfunction
 
@@ -133,22 +130,25 @@ function NERDTreePreview_s(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_Quit()
-    execute 'vsplit +setlocal\ modifiable ' . l:filepath
+    execute 'vsplit +setlocal\ modifiable '.l:filepath
 endfunction
 
 function NERDTreePreview_gs(...)
     let l:filepath = NERDTreePreview_GetCurrentNode()
     call NERDTreePreview_SetPreviewWindow()
     call NERDTreePreview_RestorePreviewWindow()
-    execute 'vsplit +setlocal\ modifiable|setlocal\ noreadonly ' . l:filepath
+    execute 'vsplit +setlocal\ modifiable|setlocal\ noreadonly '.l:filepath
     call NERDTreePreview_SetPreviewWindow()
 endfunction
 
 function NERDTreePreview_GetCurrentNode()
+    let l:filepath = ""
     let l:file_obj = g:NERDTreeFileNode.GetSelected()
+
     if l:file_obj != {}
-        return l:file_obj.path.str()
+        let l:filepath = l:file_obj.path.str()
     endif
+    return l:filepath
 endfunction
 
 function NERDTreePreview_SetPreviewWindow()
@@ -176,10 +176,11 @@ function NERDTreePreview_RestorePreviewWindow()
     if exists('b:NERDTreePreview_preview_win')
         let l:original_buf = b:NERDTreePreview_original_buf
         call win_gotoid(b:NERDTreePreview_preview_win)
-        execute 'buffer ' . l:original_buf
+        execute 'buffer '.l:original_buf
     endif
 endfunction
 
+let s:NERDTreePreview_unlisted_buffers = []
 function NERDTreePreview_Show()
     let l:file_obj = g:NERDTreeFileNode.GetSelected()
     if l:file_obj == {}
@@ -194,11 +195,14 @@ function NERDTreePreview_Show()
         call NERDTreeFocus()
         call win_gotoid(b:NERDTreePreview_preview_win)
         if buflisted(l:filename)
-            execute 'edit '. l:filename
+            execute 'edit '.l:filename
         else
+            let l:shortmess_revert = &shortmess
             set shortmess+=A
-            execute 'edit +setlocal\ nobuflisted|setlocal\ nomodifiable|setlocal\ readonly ' . l:filename 
-            set shortmess-=A
+            execute 'edit +setlocal\ nobuflisted|setlocal\ nomodifiable|setlocal\ readonly '.l:filename 
+            let &shortmess = l:shortmess_revert
+            let s:NERDTreePreview_unlisted_buffers = add(s:NERDTreePreview_unlisted_buffers, bufnr())
+            call uniq(sort(s:NERDTreePreview_unlisted_buffers))
         endif
         call NERDTreeFocus()
     endif
@@ -228,24 +232,19 @@ function NERDTreePreview_Quit()
 endfunction
 
 function NERDTreePreview_DeleteUnlistedBuffers()
-    redir => l:scratch
-        silent ls u
-    redir END
-    let buflist = split(l:scratch,"\n")
-    for item in buflist
-        if item !~# 'NERD_tree_' && item !~# 'NERDTreePreview'
-            silent! execute 'bdelete '. item[:2]
-        endif
+    for l:num in s:NERDTreePreview_unlisted_buffers
+        silent execute l:num.'bwipeout'
     endfor
+    let s:NERDTreePreview_unlisted_buffers = []
 endfunction
 
 function NERDTreePreview_Skip(file)
-    let line_count = system( 'wc -l '.shellescape(a:file).' | awk '. shellescape('{print $1}') )
+    let line_count = system( 'wc -l '.shellescape(a:file).' | awk '.shellescape('{print $1}') )
     if line_count > g:NERDTreePreview_line_count_limit
         return 1
     endif
 
-    if system('file -ib ' . shellescape(a:file)) =~# 'binary'
+    if system('file -ib '.shellescape(a:file)) =~# 'binary'
         return 1
     endif
 
