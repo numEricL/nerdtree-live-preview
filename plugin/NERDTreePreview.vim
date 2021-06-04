@@ -21,6 +21,13 @@ function NERDTreePreview_Enable()
                 \ 'override': '1',
                 \ })
     call NERDTreeAddKeyMap({
+                \ 'key': '<cr>',
+                \ 'callback': 'NERDTreePreview_o',
+                \ 'quickhelpText': 'same as o custom',
+                \ 'override': '1',
+                \ 'scope': 'FileNode',
+                \ })
+    call NERDTreeAddKeyMap({
                 \ 'key': 'o',
                 \ 'callback': 'NERDTreePreview_o',
                 \ 'quickhelpText': 'o custom',
