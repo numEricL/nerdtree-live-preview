@@ -215,6 +215,9 @@ function s:Show() abort
             let s:unlisted_buffers[bufnr('%')] = ''
         endif
         call NERDTreeFocus()
+    else
+        call s:RestorePreviewWindow()
+        call NERDTreeFocus()
     endif
 endfunction
 
