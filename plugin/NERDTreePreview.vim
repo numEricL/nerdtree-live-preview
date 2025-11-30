@@ -15,7 +15,19 @@ function NERDTreePreview_Enable() abort
                 \ 'override': '1',
                 \ })
     call NERDTreeAddKeyMap({
+                \ 'key':           '<down>',
+                \ 'callback':      'NERDTreePreview_j',
+                \ 'quickhelpText': 'preview',
+                \ 'override': '1',
+                \ })
+    call NERDTreeAddKeyMap({
                 \ 'key':           'k',
+                \ 'callback':      'NERDTreePreview_k',
+                \ 'quickhelpText': 'preview',
+                \ 'override': '1',
+                \ })
+    call NERDTreeAddKeyMap({
+                \ 'key':           '<up>',
                 \ 'callback':      'NERDTreePreview_k',
                 \ 'quickhelpText': 'preview',
                 \ 'override': '1',
